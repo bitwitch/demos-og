@@ -12,7 +12,11 @@ GLuint uniform_elapsed_time;
 
 GLuint attribute_v_coord;
 
-// Vertices
+GLuint texture_lookup, buffer_lookup, uniform_lookup;
+
+GLubyte *data_lookup;
+
+// vertices for full window
 const GLfloat vbo_vertices[] = {
     -1, -1, 0, 1,
      1, -1, 0, 1,
@@ -69,6 +73,8 @@ void init(GLFWwindow* window)
 	shader_program = CreateProgram(shaderList);
 	std::for_each(shaderList.begin(), shaderList.end(), glDeleteShader);
 
+	glUseProgram(shader_program);
+
     // initialize vertex buffer
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -80,8 +86,36 @@ void init(GLFWwindow* window)
 
     // uniforms
     uniform_elapsed_time = glGetUniformLocation(shader_program, "elapsedTime");
+    uniform_lookup = glGetUniformLocation(shader_program, "lookup");
 
-    // needed to generate anything???
+    GLuint uniform_buffer_width = glGetUniformLocation(shader_program, "buffer_width");
+    glUniform1i(uniform_buffer_width, fb_width); 
+    GLuint uniform_buffer_height = glGetUniformLocation(shader_program, "buffer_height");
+    glUniform1i(uniform_buffer_height, fb_height); 
+
+    // generate lookup table data
+    int buf_size = fb_width * fb_height;
+    data_lookup = new GLubyte[buf_size];
+    //memset(data_lookup, 69, buf_size);
+
+    int x, y, dst = 0;
+    for (y=0; y<fb_height; y++)
+        for (x=0; x<fb_width; x++)
+            data_lookup[dst++] = rand() % 255; 
+
+    // create lookup table buffer object
+    glGenBuffers(1, &buffer_lookup);
+    glBindBuffer(GL_TEXTURE_BUFFER, buffer_lookup);
+    glBufferData(GL_TEXTURE_BUFFER, buf_size, data_lookup, GL_STATIC_DRAW);
+    glBindBuffer(GL_TEXTURE_BUFFER, 0);
+   
+    // create buffer texture
+    glGenTextures(1, &texture_lookup);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_BUFFER, texture_lookup);
+    glTexBuffer(GL_TEXTURE_BUFFER, GL_R8, buffer_lookup);
+
+    // vertex array object
     glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 }
@@ -89,11 +123,16 @@ void init(GLFWwindow* window)
 void display()
 {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT);
 
 	glUseProgram(shader_program);
 
     glUniform1f(uniform_elapsed_time, glfwGetTime()); 
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_BUFFER, texture_lookup);
+    glTexBuffer(GL_TEXTURE_BUFFER, GL_R8, buffer_lookup);
+    glUniform1i(uniform_lookup, 0);
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
@@ -110,14 +149,10 @@ void display()
 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-	glDisableVertexAttribArray(attribute_v_coord);
-
-	glUseProgram(0);
-    
     // NOTE: glfwSwapBuffers() called by main loop!!!
 }
 
 void destroy()
 {
-
+    delete [] data_lookup;
 }
