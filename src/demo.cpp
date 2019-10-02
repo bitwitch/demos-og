@@ -2,46 +2,32 @@
 
 typedef unsigned char u8;
 
+int fb_width, fb_height;
+
 GLuint theProgram;
 GLuint uniElapsedTime;
 GLuint vbo;
 GLuint vao;
 
 GLubyte *plasma1;
-GLubyte *plasma2;
-
 GLuint tex_plasma1;
-GLuint tex_plasma2;
-
-int fb_width, fb_height;
-
 const int plasma1_tex_unit = 0;
-const int plasma2_tex_unit = 1;
-
 GLuint plasma1_sampler;
-GLuint plasma2_sampler;
+
+// full window, 2 triangles (one quad)
+const float vertexData[] = {
+    -1.0f, -1.0f, 0.0f, 1.0f,
+    -1.0f, 1.0f, 0.0f, 1.0f,
+    1.0f, 1.0f, 0.0f, 1.0f,
+
+    -1.0f, -1.0f, 0.0f, 1.0f,
+    1.0f, 1.0f, 0.0f, 1.0f,
+    1.0f, -1.0f, 0.0f, 1.0f
+};
 
 void precalculate(GLubyte *buffer, int select)
 {
-    int w = fb_width, h = fb_height;
-    if (select == 0) {
-        for (int y = 0; y < h; y++) {
-            for (int x = 0; x < w; x++) {
-                //buffer[y*w+x] = (GLubyte)(64 + 63 * sin(hypot(0.5*w - x, 0.5*h - y) * 0.0666));
-                buffer[y*w+x] = 255;
-            }
-        }
-        
-    }
-    else
-    {
-        for (int y = 0; y < h; y++) {
-            for (int x = 0; x < w; x++) {
-                buffer[y*w+x] = (GLubyte)(64 + 63 * sin((float)x/(37+15*cos((float)y/74)))
-                                                  * cos((float)y/(31+11*sin((float)x/57))));
-            }
-        }
-    }
+    memset(buffer, 255, 2*fb_width*2*fb_height);
 }
 
 GLuint create_plasma_texture(GLubyte* plasma, int select)
@@ -62,7 +48,7 @@ GLuint create_plasma_texture(GLubyte* plasma, int select)
     return tex_plasma;
 }
 
-void init(GLFWwindow* window)
+void init(GLFWwindow *window)
 {
     glfwGetFramebufferSize(window, &fb_width, &fb_height);
 
@@ -74,68 +60,61 @@ void init(GLFWwindow* window)
 	std::for_each(shaderList.begin(), shaderList.end(), glDeleteShader);
 
 	// Initialize Vertex Buffer
-	//glGenBuffers(1, &vbo);
-	//glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    // initialize precalculated plasma textures
-    int bufSize = 2*fb_width*2*fb_height;
-    plasma1 = new GLubyte[bufSize];
-    tex_plasma1 = create_plasma_texture(plasma1, 0);
-
-    
-    printf("tex_plasma_1: %d\n", tex_plasma1);
-    //plasma2 = new GLubyte[bufSize];
-    //tex_plasma2 = create_plasma_texture(plasma2, 1);
-
-    printf("index 861 = %d\n", plasma1[861]);
-
-    // Initialize uniforms
     glUseProgram(theProgram);
 
+    // Initialize uniforms
     GLuint uniLoopDuration = glGetUniformLocation(theProgram, "loopDuration");
     glUniform1f(uniLoopDuration, 5.0f);
-
-    GLuint uniFbWidth = glGetUniformLocation(theProgram, "fbWidth");
-    glUniform1i(uniFbWidth, fb_width);
-
-    GLuint uniFbHeight = glGetUniformLocation(theProgram, "fbHeight");
-    glUniform1i(uniFbHeight, fb_height);
-
-    GLuint uniPlasma1 = glGetUniformLocation(theProgram, "plasma1");
-    glUniform1i(uniPlasma1, plasma1_tex_unit);
-    glActiveTexture(GL_TEXTURE0 + plasma1_tex_unit);
-    glBindTexture(GL_TEXTURE_1D, tex_plasma1);
-
-    glGenSamplers(1, &plasma1_sampler);
-    glSamplerParameteri(plasma1_sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glSamplerParameteri(plasma1_sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glSamplerParameteri(plasma1_sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glBindSampler(plasma1_tex_unit, plasma1_sampler);
-
-
-
-    //GLuint uniPlasma2 = glGetUniformLocation(theProgram, "plasma2");
-    //glUniform1i(uniPlasma2, plasma2_tex_unit);
-    //glActiveTexture(GL_TEXTURE0 + plasma2_tex_unit);
-    //glBindTexture(GL_TEXTURE_1D, tex_plasma2);
-    //glGenSamplers(1, &plasma2_sampler);
-    //glSamplerParameteri(plasma2_sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    //glSamplerParameteri(plasma2_sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    //glSamplerParameteri(plasma2_sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    //glBindSampler(plasma2_tex_unit, plasma2_sampler);
-
-
     uniElapsedTime = glGetUniformLocation(theProgram, "elapsedTime");
 
+    // Initialize texture
+    int buf_size = 2*fb_width*2*fb_height;
+    printf("buf_size: %d\n", buf_size);
+    printf("max size: %d\n", GL_MAX_TEXTURE_SIZE);
+
+    plasma1 = new GLubyte[buf_size];    
+    memset(plasma1, 255, buf_size);
+    printf("middle check: %d\n", plasma1[50]);
+
+    GLuint uniPlasma1 = glGetUniformLocation(theProgram, "plasma1");
+	glUniform1i(uniPlasma1, tex_plasma1);
+
+    //tex_plasma1 = create_plasma_texture(plasma1, 0);
+
+	glGenTextures(1, &tex_plasma1);
+	glBindTexture(GL_TEXTURE_1D, tex_plasma1);
+	glTexImage1D(GL_TEXTURE_1D, 0, GL_R8, buf_size, 0,
+		GL_RED, GL_UNSIGNED_BYTE, plasma1);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAX_LEVEL, 0);
+
+    glActiveTexture(GL_TEXTURE0 + tex_plasma1);
+    glBindTexture(GL_TEXTURE_1D, tex_plasma1); 
+
+    glGenSamplers(1, &plasma1_sampler);
+	glSamplerParameteri(plasma1_sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glSamplerParameteri(plasma1_sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glSamplerParameteri(plasma1_sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glBindSampler(tex_plasma1, plasma1_sampler);
+
     // bind vertex array object to context
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
+    // set culling options
+    glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glFrontFace(GL_CW);
 }
 
 void display()
 {
+
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
@@ -145,24 +124,18 @@ void display()
     glUniform1f(uniElapsedTime, glfwGetTime()); 
 
     // pass vertex data
-	//glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	//glEnableVertexAttribArray(0);
-	//glEnableVertexAttribArray(1);
-	//glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
-	//glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, (void*)48);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
-	//glDrawArrays(GL_TRIANGLES, 0, 3);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-	//glDisableVertexAttribArray(0);
-	//glDisableVertexAttribArray(1);
+	glDrawArrays(GL_TRIANGLES, 0, 6); 
+	glDisableVertexAttribArray(0);
+	glDisableVertexAttribArray(1);
 	glUseProgram(0);
 }
 
-void destroy()
-{
+void destroy() {
     delete [] plasma1;
-    delete [] plasma2;
-    //delete [] vertexData;
 }
-

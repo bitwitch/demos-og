@@ -9,7 +9,7 @@
 GLuint LoadShader(GLenum eShaderType, const std::string &strShaderFilename);
 GLuint CreateProgram(const std::vector<GLuint> &shaderList);
 
-void init(GLFWwindow* window);
+void init(GLFWwindow *window);
 void display();
 void destroy();
 

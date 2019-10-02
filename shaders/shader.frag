@@ -27,10 +27,7 @@ void main()
     int i_plasma3 = y3 * fbWidth + x3;
 
     //float color_val = texture(plasma1, i_plasma1).r + texture(plasma2, i_plasma2).r; 
-    //float color_val = texture(plasma1, 100).r + texture(plasma2, 125).r; 
-    float color_val = texture(plasma1, 0).r / 255.0f;
-    //float color_val = texture(plasma1, 0).r;
-
+    float color_val = texture(plasma1, 0).r;
     
     outputColor = vec4(0.0f, color_val, 0.0f, 1.0f);
     //outputColor = vec4(0.0f, 0.0f, 0.0f, 1.0f);
