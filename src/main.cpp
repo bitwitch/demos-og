@@ -187,12 +187,12 @@ int main(void)
     init(window);
 
     // For logging seconds per frame
-    //double lastTime = glfwGetTime();
-    //int nbFrames = 0;
+    double lastTime = glfwGetTime();
+    int nbFrames = 0;
 
     while (!glfwWindowShouldClose(window))
     {
-        //logSecondsPerFrame(lastTime, nbFrames);
+        logSecondsPerFrame(lastTime, nbFrames);
 
         display();
 
