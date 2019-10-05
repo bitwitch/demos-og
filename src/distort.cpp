@@ -5,10 +5,10 @@
 
 const GLfloat Distort::vbo_vertices[24] = {
     // position     // texCoords
-    -1, -1, 0, 1,   0, 0,
-     1, -1, 0, 1,   1, 0,
-    -1,  1, 0, 1,   1, 1,
-     1,  1, 0, 1,   0, 1
+    -1, -1, 0, 1,   0, 1,
+     1, -1, 0, 1,   1, 1,
+    -1,  1, 0, 1,   0, 0,
+     1,  1, 0, 1,   1, 0
 };
 
 void Distort::init(int width, int height)
@@ -35,7 +35,7 @@ void Distort::init(int width, int height)
     attribute_tex_coord = glGetAttribLocation(shader_program, "tex_coord");
 
     // uniforms
-    uniform_elapsed_time = glGetUniformLocation(shader_program, "elapsedTime");
+    uniform_elapsed_time = glGetUniformLocation(shader_program, "elapsed_time");
 
     unit_image = 2;
     uniform_image = glGetUniformLocation(shader_program, "image");
@@ -81,6 +81,9 @@ void Distort::display()
 	glUseProgram(shader_program);
 
     glUniform1f(uniform_elapsed_time, current_time); 
+
+    glActiveTexture(GL_TEXTURE0 + unit_image);
+    glBindTexture(GL_TEXTURE_2D, texture_image);
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
