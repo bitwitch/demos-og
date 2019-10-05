@@ -1,3 +1,21 @@
+/*
+To create a new demo, make a new file that includes "graphics.h" and defines
+the three functions: init(GLFwindow* window), display(), and destroy().
+
+init is passed a pointer to the glfw window from which you can get a number
+of useful properties, notably the window width/height and the framebuffer
+width / height. The latter can be obtained via 
+glfwGetFramebufferSize(window, &width, &height);
+
+Currently the program expects shaders to live in a directory called "shaders" 
+that is located in the same directory as main.cpp. "graphics.h" declares the
+functions LoadShader and CreateProgram which can be used to compile shader
+programs.
+
+Also note that the main loop calls glfwSwapBuffers(), so the demo defined 
+display() function does not need to call it.
+*/ 
+
 #include "graphics.h"
 #include <fstream>
 #include <stdio.h>

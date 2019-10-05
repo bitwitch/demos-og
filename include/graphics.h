@@ -13,4 +13,3 @@ void init(GLFWwindow* window);
 void display();
 void destroy();
 
-
