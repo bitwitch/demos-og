@@ -172,7 +172,8 @@ key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 int main(void)
 {
     GLFWwindow* window;
-    int width = 640, height = 640;
+    //int width = 640, height = 640;
+    int width = 800, height = 600;
 
     glfwSetErrorCallback(error_callback);
 

@@ -5,8 +5,6 @@
 
 typedef unsigned char u8;
 
-#define PI 3.14159265
-
 struct Plasma
 {
     int fb_width, fb_height;

@@ -1,6 +1,4 @@
 #include "distort.h"
-
-#define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
 const GLfloat Distort::vbo_vertices[24] = {
@@ -48,7 +46,7 @@ void Distort::init(int width, int height)
 
     // load image
     int w, h, n;
-    data_image = stbi_load("assets/xen.png", &w, &h, &n, 4); // rgba
+    data_image = stbi_load("assets/spongebob_house.png", &w, &h, &n, 4); // rgba
     if (data_image == NULL)
     {
         printf("Error loading image in distort.cpp");

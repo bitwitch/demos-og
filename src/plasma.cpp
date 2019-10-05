@@ -13,8 +13,8 @@ void Plasma::init(int width, int height)
 
     // Initialize gpu program
 	std::vector<GLuint> shaderList;
-	shaderList.push_back(LoadShader(GL_VERTEX_SHADER, "shader.vert"));
-	shaderList.push_back(LoadShader(GL_FRAGMENT_SHADER, "shader.frag"));
+	shaderList.push_back(LoadShader(GL_VERTEX_SHADER, "plasma.vert"));
+	shaderList.push_back(LoadShader(GL_FRAGMENT_SHADER, "plasma.frag"));
 	shader_program = CreateProgram(shaderList);
 	std::for_each(shaderList.begin(), shaderList.end(), glDeleteShader);
 
@@ -75,9 +75,9 @@ void Plasma::display()
     int i, dst = 0;
     for (i=0; i<256; ++i) 
     {
-        r = (GLubyte)(32 + 31 * cos(i * PI / 128 + current_time/7));
-        g = (GLubyte)(32 + 31 * sin(i * PI / 128 + current_time/6));
-        b = (GLubyte)(32 - 31 * cos(i * PI / 128 + current_time/8));
+        r = (GLubyte)(32 + 31 * cos(i * M_PI / 128 + current_time/7));
+        g = (GLubyte)(32 + 31 * sin(i * M_PI / 128 + current_time/6));
+        b = (GLubyte)(32 - 31 * cos(i * M_PI / 128 + current_time/8));
 
         data_palette[dst++] = r; 
         data_palette[dst++] = g; 
